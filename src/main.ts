@@ -32,6 +32,9 @@ async function bootstrap() {
     .build();
   SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, doc));
 
+  // Health check — no auth, no versioning
+  app.getHttpAdapter().get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 

@@ -24,7 +24,7 @@ primary_region = 'dfw'
     interval = '30s'
     method = 'GET'
     timeout = '5s'
-    path = '/v1/auth/me'
+    path = '/health'
 
 [[vm]]
   memory = '1gb'
