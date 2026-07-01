@@ -19,6 +19,13 @@ primary_region = 'dfw'
   min_machines_running = 0
   processes = ['app']
 
+  [[http_service.checks]]
+    grace_period = '10s'
+    interval = '30s'
+    method = 'GET'
+    timeout = '5s'
+    path = '/v1/auth/me'
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
