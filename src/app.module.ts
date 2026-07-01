@@ -5,6 +5,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { envValidationSchema } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { SupermarketsModule } from './modules/supermarkets/supermarkets.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { PaginationInterceptor } from './common/interceptors/pagination.interceptor';
 
@@ -24,7 +25,7 @@ import { PaginationInterceptor } from './common/interceptors/pagination.intercep
     ]),
     PrismaModule,
     AuthModule,
-    // SupermarketsModule,
+    SupermarketsModule,
     // ListsModule,
     // BarcodeModule,
     // MediaModule,
