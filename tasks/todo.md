@@ -17,8 +17,8 @@
 
 ## Fase 1: Auth
 
-- [ ] **1.1** AuthModule: registro, login, JWT access token, refresh token en cookie HttpOnly
-- [ ] **1.2** Refresh token rotation + logout
+- [x] **1.1** AuthModule: registro, login, JWT access token, refresh token en cookie HttpOnly
+- [x] **1.2** Refresh token rotation + logout
 
 **CHECKPOINT 1** — flujo login → ruta protegida → refresh → logout funcional
 
@@ -26,7 +26,7 @@
 
 ## Fase 2: Supermercados
 
-- [ ] **2.1** SupermarketsModule: CRUD completo + paginación + búsqueda + ownership
+- [x] **2.1** SupermarketsModule: CRUD completo + paginación + búsqueda + ownership
 
 **CHECKPOINT 2** — CRUD supermercados funcional con isolation entre usuarios
 
