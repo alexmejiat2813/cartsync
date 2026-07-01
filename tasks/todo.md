@@ -34,8 +34,8 @@
 
 ## Fase 3: Listas y Productos
 
-- [ ] **3.1** ListsModule: CRUD + filtros por status/supermarket + cálculo de total al completar
-- [ ] **3.2** ProductsModule: CRUD nested bajo `/lists/:listId/products` + recálculo de total en transacción
+- [x] **3.1** ListsModule: CRUD + filtros por status/supermarket + cálculo de total al completar
+- [x] **3.2** ProductsModule: CRUD nested bajo `/lists/:listId/products` + recálculo de total en transacción
 
 **CHECKPOINT 3** — flujo crear lista → añadir productos → completar → total correcto
 
@@ -43,8 +43,8 @@
 
 ## Fase 4: Barcode + Media
 
-- [ ] **4.1** BarcodeModule: wiring completo + rate limiting 30 req/min
-- [ ] **4.2** MediaModule: wiring completo + endpoint presigned URL + bucket privado
+- [x] **4.1** BarcodeModule: wiring completo + rate limiting 30 req/min
+- [x] **4.2** MediaModule: wiring completo + endpoint presigned URL + bucket privado
 
 **CHECKPOINT 4** — scan barcode → autocompleta producto; upload imagen → URL accesible
 
