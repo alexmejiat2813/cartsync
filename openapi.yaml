@@ -1,0 +1,726 @@
+openapi: 3.1.0
+info:
+  title: CartSync API
+  version: 1.0.0
+  description: Market list management API — Android, Web, macOS clients
+  contact:
+    email: alexmejia.1305@gmail.com
+
+servers:
+  - url: https://api.cartsync.app/v1
+    description: Production
+  - url: http://localhost:3000/v1
+    description: Local
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: auth
+  - name: products
+  - name: supermarkets
+  - name: lists
+  - name: barcode
+  - name: media
+
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      security: []
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [auth]
+      security: []
+      summary: Authenticate and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: JWT issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /supermarkets:
+    get:
+      tags: [supermarkets]
+      summary: List supermarkets for authenticated user
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated supermarket list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupermarkets'
+    post:
+      tags: [supermarkets]
+      summary: Create supermarket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSupermarketDto'
+      responses:
+        '201':
+          description: Supermarket created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supermarket'
+
+  /supermarkets/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    get:
+      tags: [supermarkets]
+      summary: Get supermarket by ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supermarket'
+          description: OK
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [supermarkets]
+      summary: Update supermarket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSupermarketDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supermarket'
+    delete:
+      tags: [supermarkets]
+      summary: Delete supermarket
+      responses:
+        '204':
+          description: Deleted
+
+  /lists:
+    get:
+      tags: [lists]
+      summary: List shopping lists
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ListStatus'
+        - name: supermarketId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Paginated lists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLists'
+    post:
+      tags: [lists]
+      summary: Create shopping list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListDto'
+      responses:
+        '201':
+          description: List created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingList'
+
+  /lists/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    get:
+      tags: [lists]
+      summary: Get list with products
+      responses:
+        '200':
+          description: List detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [lists]
+      summary: Update list metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateListDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingList'
+    delete:
+      tags: [lists]
+      summary: Delete list
+      responses:
+        '204':
+          description: Deleted
+
+  /lists/{listId}/products:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [products]
+      summary: Get products in a list
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Paginated products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProducts'
+    post:
+      tags: [products]
+      summary: Add product to list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+      responses:
+        '201':
+          description: Product added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /lists/{listId}/products/{id}:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/ResourceId'
+    patch:
+      tags: [products]
+      summary: Update product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+    delete:
+      tags: [products]
+      summary: Remove product from list
+      responses:
+        '204':
+          description: Deleted
+
+  /barcode/scan/{code}:
+    get:
+      tags: [barcode]
+      summary: Lookup product data by barcode (Open Food Facts + local cache)
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '7501055300166'
+      responses:
+        '200':
+          description: Product data for autocomplete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarcodeResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          description: External barcode service unavailable
+
+  /media/upload:
+    post:
+      tags: [media]
+      summary: Upload product or receipt image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, entityType]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JPEG, PNG, or WebP. Max 5 MB.
+                entityType:
+                  type: string
+                  enum: [product, receipt, supermarket]
+                entityId:
+                  type: string
+                  format: uuid
+                  description: Optional — link to existing entity
+      responses:
+        '201':
+          description: Upload successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          description: File too large (max 5 MB)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Invalid or missing JWT
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ListStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, COMPLETED, ARCHIVED]
+
+    RegisterDto:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          minLength: 2
+
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Seconds until expiry
+        user:
+          $ref: '#/components/schemas/UserSummary'
+
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+
+    Supermarket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateSupermarketDto:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        address:
+          type: string
+
+    UpdateSupermarketDto:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        logoUrl:
+          type: string
+
+    PaginatedSupermarkets:
+      $ref: '#/components/schemas/PaginatedBase'
+
+    ShoppingList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/ListStatus'
+        totalAmount:
+          type: string
+          description: Decimal string to avoid float precision issues
+        supermarketId:
+          type: string
+          format: uuid
+          nullable: true
+        receiptUrl:
+          type: string
+          nullable: true
+        purchasedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ShoppingListDetail:
+      allOf:
+        - $ref: '#/components/schemas/ShoppingList'
+        - type: object
+          properties:
+            supermarket:
+              $ref: '#/components/schemas/Supermarket'
+              nullable: true
+            products:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+
+    CreateListDto:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        supermarketId:
+          type: string
+          format: uuid
+
+    UpdateListDto:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/ListStatus'
+        supermarketId:
+          type: string
+          format: uuid
+          nullable: true
+        purchasedAt:
+          type: string
+          format: date-time
+
+    PaginatedLists:
+      $ref: '#/components/schemas/PaginatedBase'
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        barcode:
+          type: string
+          nullable: true
+        quantity:
+          type: string
+          description: Decimal string
+        unitPrice:
+          type: string
+          description: Decimal string
+        totalPrice:
+          type: string
+          description: quantity * unitPrice
+        brand:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        checked:
+          type: boolean
+        supermarketId:
+          type: string
+          format: uuid
+          nullable: true
+
+    CreateProductDto:
+      type: object
+      required: [name, quantity, unitPrice]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        barcode:
+          type: string
+        quantity:
+          type: number
+          minimum: 0.001
+        unitPrice:
+          type: number
+          minimum: 0
+        brand:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        supermarketId:
+          type: string
+          format: uuid
+
+    UpdateProductDto:
+      type: object
+      properties:
+        name:
+          type: string
+        quantity:
+          type: number
+          minimum: 0.001
+        unitPrice:
+          type: number
+          minimum: 0
+        checked:
+          type: boolean
+        imageUrl:
+          type: string
+          format: uri
+
+    PaginatedProducts:
+      $ref: '#/components/schemas/PaginatedBase'
+
+    BarcodeResult:
+      type: object
+      properties:
+        barcode:
+          type: string
+        name:
+          type: string
+        brand:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        nutriscore:
+          type: string
+          enum: [A, B, C, D, E]
+          nullable: true
+        source:
+          type: string
+          enum: [cache, openfoodfacts]
+
+    UploadResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        publicUrl:
+          type: string
+          format: uri
+        storageKey:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+
+    PaginatedBase:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalPages:
+              type: integer
