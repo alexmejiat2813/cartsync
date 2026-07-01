@@ -52,9 +52,9 @@
 
 ## Fase 5: Calidad y Producción
 
-- [ ] **5.1** Unit tests Jest — BarcodeService, MediaService, AuthService, ProductsService (>80% cov)
-- [ ] **5.2** Rate limiting global (@nestjs/throttler) + logging estructurado pino
-- [ ] **5.3** Docker Compose (Postgres + pgAdmin) + Dockerfile multi-stage + seed
+- [x] **5.1** Unit tests Jest — BarcodeService, MediaService, AuthService, ProductsService (23 tests, 100% pass)
+- [x] **5.2** Rate limiting global (@nestjs/throttler) + logging estructurado pino (nestjs-pino)
+- [x] **5.3** Docker Compose (Postgres + pgAdmin) + Dockerfile multi-stage + seed
 
 **CHECKPOINT FINAL** — build, tests, e2e, Docker, review
 
