@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
+import { LoggerModule } from 'nestjs-pino';
 import { envValidationSchema } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -19,6 +20,20 @@ import { PaginationInterceptor } from './common/interceptors/pagination.intercep
       isGlobal: true,
       validationSchema: envValidationSchema,
       validationOptions: { abortEarly: true },
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env['NODE_ENV'] === 'production' ? 'info' : 'debug',
+        transport:
+          process.env['NODE_ENV'] !== 'production'
+            ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
+            : undefined,
+        customProps: () => ({ context: 'HTTP' }),
+        serializers: {
+          req: (req) => ({ method: req.method, url: req.url, id: req.id }),
+          res: (res) => ({ statusCode: res.statusCode }),
+        },
+      },
     }),
     ThrottlerModule.forRoot([
       {
