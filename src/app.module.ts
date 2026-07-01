@@ -6,6 +6,8 @@ import { envValidationSchema } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SupermarketsModule } from './modules/supermarkets/supermarkets.module';
+import { ListsModule } from './modules/lists/lists.module';
+import { ProductsModule } from './modules/products/products.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { PaginationInterceptor } from './common/interceptors/pagination.interceptor';
 
@@ -26,7 +28,8 @@ import { PaginationInterceptor } from './common/interceptors/pagination.intercep
     PrismaModule,
     AuthModule,
     SupermarketsModule,
-    // ListsModule,
+    ListsModule,
+    ProductsModule,
     // BarcodeModule,
     // MediaModule,
   ],
