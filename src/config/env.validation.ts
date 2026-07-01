@@ -10,11 +10,12 @@ export const envValidationSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
 
-  AWS_REGION: Joi.string().required(),
-  AWS_ACCESS_KEY_ID: Joi.string().required(),
-  AWS_SECRET_ACCESS_KEY: Joi.string().required(),
-  AWS_S3_BUCKET: Joi.string().required(),
-  CDN_BASE_URL: Joi.string().uri().required(),
+  // Required in production; optional in development (media upload will fail gracefully)
+  AWS_REGION: Joi.string().allow('').when('NODE_ENV', { is: 'production', then: Joi.string().required(), otherwise: Joi.string().allow('').default('us-east-1') }),
+  AWS_ACCESS_KEY_ID: Joi.string().allow('').when('NODE_ENV', { is: 'production', then: Joi.string().required(), otherwise: Joi.string().allow('').default('dev') }),
+  AWS_SECRET_ACCESS_KEY: Joi.string().allow('').when('NODE_ENV', { is: 'production', then: Joi.string().required(), otherwise: Joi.string().allow('').default('dev') }),
+  AWS_S3_BUCKET: Joi.string().allow('').when('NODE_ENV', { is: 'production', then: Joi.string().required(), otherwise: Joi.string().allow('').default('dev-bucket') }),
+  CDN_BASE_URL: Joi.string().allow('').when('NODE_ENV', { is: 'production', then: Joi.string().uri().required(), otherwise: Joi.string().allow('').default('http://localhost:3000') }),
 
   CORS_ORIGINS: Joi.string().default(''),
 });
