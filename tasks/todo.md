@@ -66,10 +66,16 @@
 - [x] Delete strategy → **soft delete** en `supermarkets` + `shopping_lists` via `deleted_at`; hard delete en `products`
 - [x] Moneda → **campo `currency CHAR(3)`** en `shopping_lists` (ISO 4217, default `MXN`)
 
-## Decisiones Pendientes
+## Fase 6: E2E, Producción y Decisiones
 
-- [ ] Push notifications: fuera de scope o planificar modelo ahora
-- [ ] macOS (fase 2): misma API o endpoints adicionales
+- [x] **6.1** E2E tests — flujo completo con supertest (register → login → CRUD → completar lista) — 24/24 passing
+- [x] **6.2** Producción — `.env.example` completo, Joi valida AWS vars como required en production
+- [x] **6.3** Decisiones pendientes — push notifications (fuera de scope v1, modelo en v2) + macOS (misma API, sin cambios)
+
+## Decisiones Resueltas (fase 6)
+
+- [x] Push notifications: **fuera de scope v1** — el backend solo expone REST; el cliente maneja APNs/FCM. Si se necesita en v2, agregar tabla `device_tokens(userId, token, platform, createdAt)`.
+- [x] macOS client: **misma API sin cambios** — URI versioning + JWT + cookie HttpOnly funciona en iOS/macOS nativamente.
 
 ---
 
