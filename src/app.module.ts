@@ -4,6 +4,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { envValidationSchema } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { PaginationInterceptor } from './common/interceptors/pagination.interceptor';
 
@@ -22,8 +23,7 @@ import { PaginationInterceptor } from './common/interceptors/pagination.intercep
       },
     ]),
     PrismaModule,
-    // Feature modules added here as they are implemented:
-    // AuthModule,
+    AuthModule,
     // SupermarketsModule,
     // ListsModule,
     // BarcodeModule,
