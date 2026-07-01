@@ -11,10 +11,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Throttle } from '@nestjs/throttler';
@@ -25,7 +26,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env['NODE_ENV'] === 'production',
   sameSite: 'strict' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7d in ms
+  maxAge: 7 * 24 * 60 * 60 * 1000,
   path: '/v1/auth',
 };
 
@@ -41,9 +42,10 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User created, tokens issued' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, ...payload } = await this.authService.register(dto);
-    res.cookie(COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-    return payload;
+    const result = await this.authService.register(dto);
+    // Web: set HttpOnly cookie. Native: refreshToken also in body.
+    res.cookie(COOKIE_NAME, result.refreshToken, COOKIE_OPTIONS);
+    return result; // includes refreshToken for native clients
   }
 
   @Post('login')
@@ -53,29 +55,40 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Tokens issued' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, ...payload } = await this.authService.login(dto);
-    res.cookie(COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-    return payload;
+    const result = await this.authService.login(dto);
+    res.cookie(COOKIE_NAME, result.refreshToken, COOKIE_OPTIONS);
+    return result; // includes refreshToken for native clients
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Rotate refresh token, issue new access token' })
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const rawToken = req.cookies?.[COOKIE_NAME] as string | undefined;
+  @ApiBody({ type: RefreshDto, required: false })
+  async refresh(
+    @Req() req: Request,
+    @Body() dto: RefreshDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Cookie takes precedence (web); fall back to body (native)
+    const rawToken = (req.cookies?.[COOKIE_NAME] as string | undefined) ?? dto.refreshToken;
     if (!rawToken) throw new UnauthorizedException('No refresh token');
 
-    const deviceInfo = req.headers['user-agent']?.slice(0, 255);
-    const { refreshToken, ...payload } = await this.authService.refresh(rawToken, deviceInfo);
-    res.cookie(COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-    return payload;
+    const deviceInfo = dto.deviceInfo ?? req.headers['user-agent']?.slice(0, 255);
+    const result = await this.authService.refresh(rawToken, deviceInfo);
+    res.cookie(COOKIE_NAME, result.refreshToken, COOKIE_OPTIONS);
+    return result; // includes refreshToken for native clients
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Revoke refresh token' })
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const rawToken = req.cookies?.[COOKIE_NAME] as string | undefined;
+  @ApiBody({ type: RefreshDto, required: false })
+  async logout(
+    @Req() req: Request,
+    @Body() dto: RefreshDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const rawToken = (req.cookies?.[COOKIE_NAME] as string | undefined) ?? dto.refreshToken;
     if (rawToken) {
       await this.authService.logout(rawToken);
     }
