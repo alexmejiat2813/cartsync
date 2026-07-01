@@ -1,5 +1,13 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  ForbiddenException,
+  Logger,
+} from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadMediaDto } from './dto/upload-media.dto';
@@ -85,5 +93,29 @@ export class MediaService {
       mimeType: record.mimeType,
       sizeBytes: record.sizeBytes,
     };
+  }
+
+  async getPresignedUrl(id: string, userId: string): Promise<{ url: string; expiresIn: number }> {
+    const record = await this.prisma.mediaUpload.findUnique({
+      where: { id },
+      select: { userId: true, storageKey: true },
+    });
+
+    if (!record) throw new NotFoundException('Media not found');
+    if (record.userId !== userId) throw new ForbiddenException();
+
+    const expiresIn = 3600; // 1 hour
+
+    try {
+      const url = await getSignedUrl(
+        this.s3,
+        new GetObjectCommand({ Bucket: this.bucket, Key: record.storageKey }),
+        { expiresIn },
+      );
+      return { url, expiresIn };
+    } catch (err) {
+      this.logger.error('Presigned URL generation failed', err);
+      throw new InternalServerErrorException('Could not generate download URL');
+    }
   }
 }

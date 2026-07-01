@@ -8,6 +8,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SupermarketsModule } from './modules/supermarkets/supermarkets.module';
 import { ListsModule } from './modules/lists/lists.module';
 import { ProductsModule } from './modules/products/products.module';
+import { BarcodeModule } from './modules/barcode/barcode.module';
+import { MediaModule } from './modules/media/media.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { PaginationInterceptor } from './common/interceptors/pagination.interceptor';
 
@@ -30,8 +32,8 @@ import { PaginationInterceptor } from './common/interceptors/pagination.intercep
     SupermarketsModule,
     ListsModule,
     ProductsModule,
-    // BarcodeModule,
-    // MediaModule,
+    BarcodeModule,
+    MediaModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

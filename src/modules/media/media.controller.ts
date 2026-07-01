@@ -1,6 +1,8 @@
 import {
   Controller,
   Post,
+  Get,
+  Param,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -9,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ParseUuidPipe } from '../../common/pipes/parse-uuid.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { MediaService } from './media.service';
@@ -63,5 +66,18 @@ export class MediaController {
     }
 
     return this.mediaService.upload(file, body, userId);
+  }
+
+  @Get(':id/url')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get presigned S3 download URL (expires in 1h)' })
+  @ApiResponse({ status: 200, description: 'Presigned URL valid for 3600 seconds' })
+  @ApiResponse({ status: 403, description: 'Upload belongs to another user' })
+  @ApiResponse({ status: 404, description: 'Media not found' })
+  getPresignedUrl(
+    @Param('id', ParseUuidPipe) id: string,
+    @CurrentUser() userId: string,
+  ) {
+    return this.mediaService.getPresignedUrl(id, userId);
   }
 }

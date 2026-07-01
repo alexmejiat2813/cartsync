@@ -10,6 +10,7 @@ import { BarcodeService } from './barcode.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('barcode')
 @ApiBearerAuth()
@@ -20,6 +21,7 @@ export class BarcodeController {
 
   @Get('scan/:code')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60_000, limit: 30 } })
   @ApiOperation({ summary: 'Lookup product by barcode via Open Food Facts' })
   @ApiParam({ name: 'code', example: '7501055300166' })
   @ApiResponse({ status: 200, description: 'Product data for autocomplete' })
